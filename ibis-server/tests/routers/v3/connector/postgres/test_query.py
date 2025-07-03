@@ -655,7 +655,8 @@ SELECT
     CAST(1.23e4 AS DECIMAL(10,5)) AS case_cast_decimal,
     CAST(1.234e+14 AS DECIMAL(20,0)) AS show_float,
     CAST(1.234e+15 AS DECIMAL(20,0)) AS show_exponent,
-    CAST(1.123456789 AS DECIMAL(20,9)) AS round_to_9_decimal_places
+    CAST(1.123456789 AS DECIMAL(20,9)) AS round_to_9_decimal_places,
+    CAST(0.123456789123456789 AS DECIMAL(20,18)) AS round_to_18_decimal_places
             """,
         },
         headers={
@@ -664,37 +665,41 @@ SELECT
     )
     assert response.status_code == 200
     result = response.json()
-    assert result["data"][0] == [
-        "0.0000123",
-        "12300.0",
-        "-0.00456",
-        "7.89",
-        "0",
-        "123.456",
-        "-123.456",
-        "1.23e-6",
-        "123.0",
-        "0",
-        0,
-        "0",
-        -1,
-        9999999999,
-        "12304.56",
-        "-123.450123",
-        0.000123,
-        1.0036585365853659,
-        None,  # NaN
-        None,  # Infinity
-        None,  # Negative Infinity
-        None,  # NULL
-        123.45600128173828,  # case_cast_float
-        "12300.0",  # case_cast_decimal
-        "123400000000000.0",  # show_float
-        # TODO: it's better to show exponent in scientific notation but currently
-        # DataFusion does not support it, so we show the full number
-        "1234000000000000.0",  # show_exponent
-        "1.123456789",  # round_to_9_decimal_places
-    ]
+    assert (
+        result["data"][0]
+        == [
+            "0.0000123",
+            "12300.0",
+            "-0.00456",
+            "7.89",
+            "0",
+            "123.456",
+            "-123.456",
+            "1.23e-6",
+            "123.0",
+            "0",
+            0,
+            "0",
+            -1,
+            9999999999,
+            "12304.56",
+            "-123.450123",
+            0.000123,
+            1.0036585365853659,
+            None,  # NaN
+            None,  # Infinity
+            None,  # Negative Infinity
+            None,  # NULL
+            123.45600128173828,  # case_cast_float
+            "12300.0",  # case_cast_decimal
+            "123400000000000.0",  # show_float
+            # TODO: it's better to show exponent in scientific notation but currently
+            # DataFusion does not support it, so we show the full number
+            "1234000000000000.0",  # show_exponent
+            "1.123456789",  # round_to_9_decimal_places
+            "0.123456789",  # round_to_18_decimal_places retains only 9 decimal digits in output
+        ]
+    )
 
 
 async def test_decimal_precision(client, manifest_str, connection_info):
